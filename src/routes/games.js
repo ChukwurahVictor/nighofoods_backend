@@ -13,27 +13,23 @@ const successMessage = (res, stat, message, data) => {
 
 router.get("/", async (req, res, next) => {
   try {
-    const games = await Game.find();
-    let filteredGames = games;
+    let games = await Game.find();
 
     if (req.query.name) {
       const nameFilter = req.query.name.toLowerCase();
-      filteredGames = games.filter(game =>
+      games = games.filter(game =>
         game.name.toLowerCase().includes(nameFilter)
       );
     }
 
     if (req.query.category) {
       const categoryFilter = req.query.category.toLowerCase();
-      filteredGames = games.filter(game =>
+      games = games.filter(game =>
         game.category.toLowerCase().includes(categoryFilter)
       );
     }
-    return res.json({
-      success: true,
-      message: "Games fetched successfully",
-      games: filteredGames,
-    });
+    games = { games, total: games.length };
+    successMessage(res, 200, "Games fetched successfully.", games);
   } catch (err) {
     next(err);
   }

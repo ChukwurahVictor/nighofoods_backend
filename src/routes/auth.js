@@ -64,6 +64,7 @@ router.get("/", async (req, res, next) => {
       user.lastname.toLowerCase().includes(lastnameFilter)
     );
   }
+  users = { users, total: users.length };
   successMessage(res, 200, "Users fetched successfully.", users);
 });
 
