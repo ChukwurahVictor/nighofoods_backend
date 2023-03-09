@@ -12,7 +12,6 @@ const successMessage = (res, stat, message, data) => {
 };
 
 router.post("/register", async (req, res, next) => {
-  // console.log(req.body);
   const { firstname, lastname, email, address } = req.body;
   if (!firstname || !lastname || !email) {
     return next(new ErrorResponse("Please enter all fields", 400));
@@ -32,14 +31,11 @@ router.post("/register", async (req, res, next) => {
 });
 
 router.post("/login", async (req, res, next) => {
-  const { email, password } = req.body;
-
-  // Check if email and password are provided
+  const { email } = req.body;
   if (!email) {
     return next(new ErrorResponse("Please provide an email and password", 400));
   }
   try {
-    // Check that user exists by email
     const user = await User.findOne({ email });
     if (!user) {
       return next(new ErrorResponse("Invalid credentials", 401));
@@ -53,42 +49,47 @@ router.post("/login", async (req, res, next) => {
 });
 
 router.get("/", async (req, res, next) => {
-  const users = await User.find();
-  let filteredUsers = users;
+  let users = await User.find();
 
   if (req.query.firstname) {
     const firstnameFilter = req.query.firstname.toLowerCase();
-    filteredUsers = users.filter(user =>
+    users = users.filter(user =>
       user.firstname.toLowerCase().includes(firstnameFilter)
     );
   }
 
-  // check if age query param is provided
   if (req.query.lastname) {
     const lastnameFilter = req.query.lastname.toLowerCase();
-    filteredUsers = users.filter(user =>
+    users = users.filter(user =>
       user.lastname.toLowerCase().includes(lastnameFilter)
     );
   }
+  successMessage(res, 200, "Users fetched successfully.", users);
+});
 
-  return res.json({
-    status: "success",
-    users: filteredUsers,
-  });
-});
 router.patch("/:id", async (req, res, next) => {
-  const users = await User.find();
-  return res.json({
-    status: "success",
-    users,
-  });
+  const { id } = req.params;
+  try {
+    const findUser = await User.findById(id);
+    if (!findUser) return next(new ErrorResponse("Error updating user", 400));
+
+    const user = await User.findByIdAndUpdate(id, req.body);
+    successMessage(res, 200, "User updated successfully.", user);
+  } catch (err) {
+    next(err);
+  }
 });
+
 router.delete("/:id", async (req, res, next) => {
-  const users = await User.find();
-  return res.json({
-    status: "success",
-    users,
-  });
+  const { id } = req.params;
+  try {
+    const deleteUser = await User.findByIdAndDelete(id);
+    if (!deleteUser) return next(new ErrorResponse("Error deleting user", 400));
+
+    successMessage(res, 200, "User deleted successfully.");
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;
