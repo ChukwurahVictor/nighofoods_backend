@@ -1,5 +1,5 @@
 require("dotenv").config();
-const express = require('express');
+const express = require("express");
 
 const connectDB = require("./src/config/db");
 // const cors = require("cors");
@@ -17,8 +17,9 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // routes
-app.use('/user/', require('./src/routes/auth'));
-app.use('/recipes/', require('./src/routes/recipe'));
+app.use("/users/", require("./src/routes/auth"));
+app.use("/recipes/", require("./src/routes/recipe"));
+app.use("/games/", require("./src/routes/games"));
 
 // 404 errors
 app.use((req, res, next) => {
@@ -32,5 +33,5 @@ app.use(errorHandler);
 
 const port = process.env.port || 5000;
 app.listen(port, () => {
-   console.log(`server running on localhost:${port}`);
-})
+  console.log(`server running on localhost:${port}`);
+});

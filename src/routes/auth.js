@@ -1,68 +1,94 @@
-const router = require('express').Router();
-const User = require('../models/User');
+const router = require("express").Router();
+const User = require("../models/User");
 
 const ErrorResponse = require("../utils/errorResponse");
 
 const successMessage = (res, stat, message, data) => {
-   return res.status(stat).json({
-      status: "success",
-      message,
-      data,
-   });
+  return res.status(stat).json({
+    status: "success",
+    message,
+    data,
+  });
 };
 
-router.post('/register', async(req, res, next) => {
-   // console.log(req.body);
-   const { name, email, password, confirmPassword } = req.body;
-   if (!name || !email || !password || !confirmPassword) {
-      return next(new ErrorResponse("Please enter all fields", 400));
-   }
-   if (password != confirmPassword) {
-      return next(new ErrorResponse("Passwords do not match", 400));
-   }
-   try {
-      const emailExist = await User.findOne({ email });
-      if(emailExist) {
-         return next(new ErrorResponse("User already exist. Please, login", 400));
-      } 
-      const user = await User.create({
-         name, email, password
-      })
-      successMessage(res, 200, "User created successfully.", user);
-   } catch (err) {
-      next(err);
-   }
-})
+router.post("/register", async (req, res, next) => {
+  // console.log(req.body);
+  const { firstname, lastname, email, address } = req.body;
+  if (!firstname || !lastname || !email) {
+    return next(new ErrorResponse("Please enter all fields", 400));
+  }
 
-router.post('/login', async(req, res, next) => {
-   const { email, password } = req.body;
+  try {
+    const user = await User.create({
+      firstname,
+      lastname,
+      email,
+      address,
+    });
+    successMessage(res, 200, "User created successfully.", user);
+  } catch (err) {
+    next(err);
+  }
+});
 
-   // Check if email and password are provided
-   if (!email || !password) {
-      return next(
-         new ErrorResponse("Please provide an email and password", 400)
-      );
-   }
-   try {
-      // Check that user exists by email
-      const user = await User.findOne({ email });
-      console.log(user);
-      if (!user) {
-         return next(new ErrorResponse("Invalid credentials", 401));
-      }
+router.post("/login", async (req, res, next) => {
+  const { email, password } = req.body;
 
-      // Check that password match
-      const isMatch = await user.matchPassword(password);
+  // Check if email and password are provided
+  if (!email) {
+    return next(new ErrorResponse("Please provide an email and password", 400));
+  }
+  try {
+    // Check that user exists by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return next(new ErrorResponse("Invalid credentials", 401));
+    }
 
-      if (!isMatch) {
-         return next(new ErrorResponse("Invalid credentials", 401));
-      }
+    successMessage(res, 200, "logged in successfully.", user);
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+});
 
-      successMessage(res, 200, "logged in successfully.", user);
-   } catch (err) {
-      console.log(err);
-      next(err);
-   }
-})
+router.get("/", async (req, res, next) => {
+  const users = await User.find();
+  let filteredUsers = users;
+
+  if (req.query.firstname) {
+    const firstnameFilter = req.query.firstname.toLowerCase();
+    filteredUsers = users.filter(user =>
+      user.firstname.toLowerCase().includes(firstnameFilter)
+    );
+  }
+
+  // check if age query param is provided
+  if (req.query.lastname) {
+    const lastnameFilter = req.query.lastname.toLowerCase();
+    filteredUsers = users.filter(user =>
+      user.lastname.toLowerCase().includes(lastnameFilter)
+    );
+  }
+
+  return res.json({
+    status: "success",
+    users: filteredUsers,
+  });
+});
+router.patch("/:id", async (req, res, next) => {
+  const users = await User.find();
+  return res.json({
+    status: "success",
+    users,
+  });
+});
+router.delete("/:id", async (req, res, next) => {
+  const users = await User.find();
+  return res.json({
+    status: "success",
+    users,
+  });
+});
 
 module.exports = router;
