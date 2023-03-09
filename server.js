@@ -2,13 +2,13 @@ require("dotenv").config();
 const express = require("express");
 
 const connectDB = require("./src/config/db");
-// const cors = require("cors");
+const cors = require("cors");
 const logger = require("morgan");
 const errorHandler = require("./src/middlewares/errorHandler");
 
 const app = express();
 app.use(express.json());
-
+app.use(cors());
 connectDB();
 
 // Logging
