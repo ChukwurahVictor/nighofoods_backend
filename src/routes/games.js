@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const moment = require("moment-timezone");
 const Game = require("../models/Game");
 
 const ErrorResponse = require("../utils/errorResponse");
@@ -15,10 +16,11 @@ router.get("/", async (req, res, next) => {
   try {
     let games = await Game.find();
 
-    if (req.query.name) {
-      const nameFilter = req.query.name.toLowerCase();
-      games = games.filter(game =>
-        game.name.toLowerCase().includes(nameFilter)
+    if (req.query.createdAt) {
+      const dateFilter = moment(req.query.createdAt).format("YYYY-MM-DD");
+      games = games.filter(
+        game =>
+          moment(game.createdAt).tz("UTC").format("YYYY-MM-DD") === dateFilter
       );
     }
 
@@ -27,6 +29,16 @@ router.get("/", async (req, res, next) => {
       games = games.filter(game =>
         game.category.toLowerCase().includes(categoryFilter)
       );
+    }
+
+    if (req.query.startDate && req.query.endDate) {
+      const startDate = moment(req.query.startDate).format("YYYY-MM-DD");
+      const endDate = moment(req.query.endDate).format("YYYY-MM-DD");
+
+      games = games.filter(game => {
+        const gameDate = moment(game.createdAt).tz("UTC").format("YYYY-MM-DD");
+        return gameDate >= startDate && gameDate <= endDate;
+      });
     }
     games = { games, total: games.length };
     successMessage(res, 200, "Games fetched successfully.", games);
