@@ -26,9 +26,13 @@ router.get("/", async (req, res, next) => {
 
     if (req.query.category) {
       const categoryFilter = req.query.category.toLowerCase();
-      games = games.filter(game =>
-        game.category.toLowerCase().includes(categoryFilter)
-      );
+      if (categoryFilter === "all") {
+        games = games;
+      } else {
+        games = games.filter(game =>
+          game.category.toLowerCase().includes(categoryFilter)
+        );
+      }
     }
 
     if (req.query.startDate && req.query.endDate) {
