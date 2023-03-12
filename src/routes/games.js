@@ -51,6 +51,15 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+router.get("/category", async (req, res, next) => {
+  try {
+    const category = await Game.distinct("category");
+    successMessage(res, 200, "Categories fetched successfully.", category);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post("/", async (req, res, next) => {
   const { name, category } = req.body;
   if (!name || !category)

@@ -17,6 +17,11 @@ router.post("/register", async (req, res, next) => {
     return next(new ErrorResponse("Please enter all fields", 400));
   }
 
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    return next(new ErrorResponse("User already exists", 400));
+  }
+
   try {
     const user = await User.create({
       firstname,
